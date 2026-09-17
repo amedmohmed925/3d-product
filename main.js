@@ -4,15 +4,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const context = canvas.getContext("2d");
     
     // Total frames extracted from video
-    // Reduced slightly to avoid end-of-video compression artifacts
-    const frameCount = 188;
+    const frameCount = 192;
     
     // Array to hold the preloaded image objects
     const images = [];
     
-    // Generate the path to the frames (assuming names like frame_001.png, frame_002.png)
+    // Generate the path to the frames (assuming names like frame_001.webp)
     const currentFrame = index => (
-        `assets/frames/frame_${index.toString().padStart(3, '0')}.png`
+        `assets/frames/frame_${index.toString().padStart(3, '0')}.webp`
     );
     
     // Preload frames
