@@ -4,7 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const context = canvas.getContext("2d");
     
     // Total frames extracted from video
-    const frameCount = 192;
+    // Keeping it at 188 to avoid the bad ending frame at the end of the video
+    const frameCount = 188;
     
     // Array to hold the preloaded image objects
     const images = [];
@@ -14,9 +15,34 @@ document.addEventListener("DOMContentLoaded", () => {
         `assets/frames/frame_${index.toString().padStart(3, '0')}.webp`
     );
     
+    let loadedCount = 0;
+    const progressText = document.getElementById('progress-text');
+    const loader = document.getElementById('loader');
+
     // Preload frames
     for (let i = 1; i <= frameCount; i++) {
         const img = new Image();
+        img.onload = () => {
+            loadedCount++;
+            if (progressText) {
+                progressText.innerText = Math.round((loadedCount / frameCount) * 100) + '%';
+            }
+            if (loadedCount === frameCount) {
+                // All images loaded
+                setTimeout(() => {
+                    if (loader) loader.classList.add('fade-out');
+                    resizeCanvas();
+                }, 500); // Small delay for smooth transition
+            }
+        };
+        img.onerror = () => {
+            // In case an image fails, still count it so we don't get stuck
+            loadedCount++;
+            if (loadedCount === frameCount && loader) {
+                loader.classList.add('fade-out');
+                resizeCanvas();
+            }
+        };
         img.src = currentFrame(i);
         images.push(img);
     }
@@ -91,10 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
     
-    // Initial setup once the first image is loaded
-    images[0].onload = () => {
-        resizeCanvas();
-    };
+    // (Resize is now called when all images are loaded)
     window.addEventListener('resize', resizeCanvas);
     // Smooth animation loop
     function updateAnimation() {
