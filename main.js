@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
         targetFrameIndex: 0
     };
     
-    // Helper function to scale image to fit canvas contain style
+    // Helper function to scale image to fit canvas appropriately
     function drawImageProp(ctx, img, x, y, w, h) {
         if (arguments.length === 2) {
             x = y = 0;
@@ -63,8 +63,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
         var iw = img.width,
             ih = img.height,
-            r = Math.min(w / iw, h / ih),
-            nw = iw * r,   // new prop. width
+            r;
+            
+        if (window.innerWidth <= 768) {
+            // Use cover scale but reduce it by 20% so the product isn't too huge/close.
+            // Since the body background matches the video background, it will seamlessly blend
+            // and still feel like it fills the screen without cutting off abruptly.
+            r = Math.max(w / iw, h / ih) * 0.8;
+        } else {
+            // Use cover style for desktop
+            r = Math.max(w / iw, h / ih);
+        }
+
+        var nw = iw * r,   // new prop. width
             nh = ih * r,   // new prop. height
             nx = x + (w - nw) / 2,
             ny = y + (h - nh) / 2;
@@ -78,19 +89,24 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Dynamically size the glass window to match the video aspect ratio
         if (images[0] && images[0].complete && images[0].width) {
-            const imgAspect = images[0].width / images[0].height;
-            const maxW = window.innerWidth * 0.9;
-            const maxH = window.innerHeight * 0.9;
-            const screenAspect = maxW / maxH;
-            
-            if (imgAspect > screenAspect) {
-                // Image is wider, constrain by width
-                glassWindow.style.width = maxW + 'px';
-                glassWindow.style.height = (maxW / imgAspect) + 'px';
+            if (window.innerWidth <= 768) {
+                glassWindow.style.width = '100%';
+                glassWindow.style.height = '100vh';
             } else {
-                // Image is taller, constrain by height
-                glassWindow.style.height = maxH + 'px';
-                glassWindow.style.width = (maxH * imgAspect) + 'px';
+                const imgAspect = images[0].width / images[0].height;
+                const maxW = window.innerWidth * 0.9;
+                const maxH = window.innerHeight * 0.9;
+                const screenAspect = maxW / maxH;
+                
+                if (imgAspect > screenAspect) {
+                    // Image is wider, constrain by width
+                    glassWindow.style.width = maxW + 'px';
+                    glassWindow.style.height = (maxW / imgAspect) + 'px';
+                } else {
+                    // Image is taller, constrain by height
+                    glassWindow.style.height = maxH + 'px';
+                    glassWindow.style.width = (maxH * imgAspect) + 'px';
+                }
             }
         }
         
